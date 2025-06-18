@@ -101,6 +101,9 @@ export function useUserProfile(userId?: string) {
     
     // For demo purposes, we'll use current total savings
     // In a real app, you'd track daily/weekly/monthly separately
+    
+    // For demo purposes, we'll use current total savings
+    // In a real app, you'd track daily/weekly/monthly separately
     const dailyCalorieProgress = Math.min((currentSavings.totalCaloriesSaved / profile.goals.dailyCalorieTarget) * 100, 100);
     const weeklyMoneyProgress = Math.min((currentSavings.totalMoneySaved / profile.goals.weeklyMoneyTarget) * 100, 100);
     const monthlyCalorieProgress = Math.min((currentSavings.totalCaloriesSaved / profile.goals.monthlyCalorieTarget) * 100, 100);

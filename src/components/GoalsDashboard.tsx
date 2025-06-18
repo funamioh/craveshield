@@ -87,7 +87,7 @@ export default function GoalsDashboard({ profile, savings, onClose, onEditProfil
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl">👤</div>
+                <div className="text-2xl">User</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {profile.age && `Age: ${profile.age}`}
                 </div>
