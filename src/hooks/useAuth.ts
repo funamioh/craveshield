@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext } from "react";
 import { User, AuthState, LoginCredentials, RegisterCredentials } from "@/types/auth";
 import { AuthService } from "@/services/authService";
 

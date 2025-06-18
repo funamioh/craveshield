@@ -7,13 +7,13 @@ const USERS_STORAGE_KEY = 'craveshield-users';
 const CURRENT_USER_KEY = 'craveshield-current-user';
 
 export class AuthService {
-  private static getUsers(): Record<string, any> {
+  private static getUsers(): Record<string, unknown> {
     if (typeof window === 'undefined') return {};
     const users = localStorage.getItem(USERS_STORAGE_KEY);
     return users ? JSON.parse(users) : {};
   }
 
-  private static saveUsers(users: Record<string, any>): void {
+  private static saveUsers(users: Record<string, unknown>): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   }
@@ -27,7 +27,7 @@ export class AuthService {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const users = this.getUsers();
-    const userEntry = Object.values(users).find((user: any) => 
+    const userEntry = Object.values(users).find((user: unknown) => 
       user.email.toLowerCase() === credentials.email.toLowerCase()
     );
 
@@ -73,7 +73,7 @@ export class AuthService {
     const users = this.getUsers();
     
     // Check if user already exists
-    const existingUser = Object.values(users).find((user: any) => 
+    const existingUser = Object.values(users).find((user: unknown) => 
       user.email.toLowerCase() === credentials.email.toLowerCase()
     );
 
@@ -183,13 +183,16 @@ export class AuthService {
 
   static getAllUsers(): User[] {
     const users = this.getUsers();
-    return Object.values(users).map((user: any) => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar: user.avatar,
-      createdAt: new Date(user.createdAt),
-      lastLogin: new Date(user.lastLogin)
-    }));
+    return Object.values(users).map((user: unknown) => {
+      const userData = user as { id: string; email: string; name: string; avatar?: string; createdAt: string; lastLogin: string };
+      return {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        avatar: userData.avatar,
+        createdAt: new Date(userData.createdAt),
+        lastLogin: new Date(userData.lastLogin)
+      };
+    });
   }
 }

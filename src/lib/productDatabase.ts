@@ -393,7 +393,7 @@ This will help me give you better recommendations and alternatives! In the meant
 export function generateProductResponse(product: Product): string {
   const { name, calories, cost, currency, alternative } = product;
   
-  const response = `${name} is approximately ${calories} kcal and costs $${cost} ${currency}. I have a better alternative home cooking idea!
+  const response = `${name} is approximately ${calories} kcal and costs $${cost} ${currency} - correct me if I'm wrong! I have a better alternative home cooking idea!
 
 **${alternative.name}**
 ${alternative.description}
@@ -412,6 +412,119 @@ This homemade alternative will satisfy your craving while being much healthier f
 What would you like to do?`;
 
   return response;
+}
+
+// Function to detect user corrections for calories and price
+export function detectCorrection(userInput: string): { calories?: number; price?: number; correctionDetected: boolean } {
+  const input = userInput.toLowerCase();
+  
+  // Patterns for calorie corrections
+  const caloriePatterns = [
+    /actually.*?(\d+)\s*(?:kcal|cal|calorie)/i,
+    /it'?s.*?(\d+)\s*(?:kcal|cal|calorie)/i,
+    /more like.*?(\d+)\s*(?:kcal|cal|calorie)/i,
+    /around.*?(\d+)\s*(?:kcal|cal|calorie)/i,
+    /about.*?(\d+)\s*(?:kcal|cal|calorie)/i,
+    /(\d+)\s*(?:kcal|cal|calorie).*?(?:actually|really|more)/i
+  ];
+  
+  // Patterns for price corrections
+  const pricePatterns = [
+    /actually.*?\$?(\d+(?:\.\d{2})?)/i,
+    /it'?s.*?\$?(\d+(?:\.\d{2})?)/i,
+    /more like.*?\$?(\d+(?:\.\d{2})?)/i,
+    /around.*?\$?(\d+(?:\.\d{2})?)/i,
+    /about.*?\$?(\d+(?:\.\d{2})?)/i,
+    /costs?.*?\$?(\d+(?:\.\d{2})?)/i,
+    /price.*?\$?(\d+(?:\.\d{2})?)/i,
+    /\$(\d+(?:\.\d{2})?).*?(?:actually|really|more)/i
+  ];
+  
+  // Check for correction keywords
+  const correctionKeywords = [
+    'actually', 'wrong', 'incorrect', 'more like', 'really', 'costs more',
+    'higher', 'lower', 'expensive', 'cheaper', 'correction', 'correct'
+  ];
+  
+  const hasCorrection = correctionKeywords.some(keyword => input.includes(keyword));
+  
+  if (!hasCorrection) {
+    return { correctionDetected: false };
+  }
+  
+  let calories: number | undefined;
+  let price: number | undefined;
+  
+  // Try to extract calorie correction
+  for (const pattern of caloriePatterns) {
+    const match = input.match(pattern);
+    if (match) {
+      calories = parseInt(match[1]);
+      break;
+    }
+  }
+  
+  // Try to extract price correction
+  for (const pattern of pricePatterns) {
+    const match = input.match(pattern);
+    if (match) {
+      price = parseFloat(match[1]);
+      break;
+    }
+  }
+  
+  return {
+    calories,
+    price,
+    correctionDetected: calories !== undefined || price !== undefined
+  };
+}
+
+// Function to generate corrected product response
+export function generateCorrectedResponse(originalProduct: Product, corrections: { calories?: number; price?: number }): { response: string; correctedProduct: Product } {
+  const correctedProduct: Product = {
+    ...originalProduct,
+    calories: corrections.calories || originalProduct.calories,
+    cost: corrections.price || originalProduct.cost
+  };
+  
+  const { name, calories, cost, currency, alternative } = correctedProduct;
+  const caloriesSaved = calories - alternative.calories;
+  const estimatedIngredientCost = cost * 0.3; // Assume ingredients cost 30% of original
+  const moneySaved = cost - estimatedIngredientCost;
+  
+  let correctionAcknowledgment = "Thanks for the correction! ";
+  
+  if (corrections.calories && corrections.price) {
+    correctionAcknowledgment += `You're right - ${name} is ${calories} kcal and costs $${cost}. `;
+  } else if (corrections.calories) {
+    correctionAcknowledgment += `You're right - ${name} is ${calories} kcal. `;
+  } else if (corrections.price) {
+    correctionAcknowledgment += `You're right - ${name} costs $${cost}. `;
+  }
+  
+  const response = `${correctionAcknowledgment}Let me recalculate the benefits of the healthy alternative:
+
+**${alternative.name}**
+${alternative.description}
+
+**Updated Nutritional Comparison:**
+- Original: ${calories} kcal
+- Alternative: ${alternative.calories} kcal (${caloriesSaved} kcal saved!)
+
+**Updated Cost Comparison:**
+- Original: $${cost}
+- Alternative: ~$${estimatedIngredientCost.toFixed(2)} (estimated ingredient cost)
+- Money saved: ~$${moneySaved.toFixed(2)}
+
+**Prep Time:** ${alternative.prepTime}
+
+**Recipe:**
+${alternative.recipe.map((step, index) => `${index + 1}. ${step}`).join('\n')}
+
+With these corrected numbers, the homemade alternative is even more beneficial! What would you like to do?`;
+
+  return { response, correctedProduct };
 }
 
 // Function to generate decision response based on user choice

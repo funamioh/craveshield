@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { findProduct, generateProductResponse, generateDecisionResponse, detectUnknownFood, generateClarificationResponse, Product } from "@/lib/productDatabase";
+import { useState, useEffect } from "react";
+import { findProduct, generateProductResponse, generateDecisionResponse, detectUnknownFood, generateClarificationResponse, detectCorrection, generateCorrectedResponse, Product } from "@/lib/productDatabase";
 import DecisionButtons from "@/components/DecisionButtons";
 import SavingsDashboard from "@/components/SavingsDashboard";
 import UserProfile from "@/components/UserProfile";
@@ -29,13 +29,10 @@ export default function Home() {
   const { savings, addSavings } = useSavings(user?.id);
   const { profile, hasProfile, saveProfile, getGreeting, getMotivationalMessage } = useUserProfile(user?.id);
 
-  // Initialize demo data on first load
-  useState(() => {
+  // Initialize demo data and welcome message on client side only
+  useEffect(() => {
     setupDemoUsers();
-  });
-
-  // Initialize welcome message based on authentication and profile
-  useState(() => {
+    
     if (!isAuthenticated) {
       setMessages([
         { text: "Welcome to CraveShield! Please sign in or create an account to start tracking your personal craving management journey.", isUser: false }
@@ -49,7 +46,7 @@ export default function Home() {
         { text: `Welcome ${user?.name}! Let's set up your profile to personalize your CraveShield experience and start tracking your progress.`, isUser: false }
       ]);
     }
-  });
+  }, [isAuthenticated, hasProfile, user?.name, getGreeting, getMotivationalMessage]);
 
   // General responses for non-product queries
   const getGeneralResponse = (userMessage: string): string => {
@@ -116,26 +113,36 @@ export default function Home() {
           return;
         }
 
-        const product = findProduct(message);
-        let response: string;
+        // Check if user is correcting previous information
+        const correction = detectCorrection(message);
         
-        if (product) {
-          // Product found - provide detailed nutritional info and alternative
-          response = generateProductResponse(product);
-          // Store the product for decision tracking (don't add savings yet)
-          setPendingProduct(product);
+        if (correction.correctionDetected && pendingProduct) {
+          // User is correcting calorie/price information
+          const { response: correctedResponse, correctedProduct } = generateCorrectedResponse(pendingProduct, correction);
+          response = correctedResponse;
+          // Update pending product with corrected information
+          setPendingProduct(correctedProduct);
         } else {
-          // Check if user mentioned an unknown food
-          const unknownFood = detectUnknownFood(message);
-          if (unknownFood) {
-            // User mentioned a food we don't recognize - ask for clarification
-            response = generateClarificationResponse(unknownFood);
-            setPendingProduct(null);
+          const product = findProduct(message);
+          
+          if (product) {
+            // Product found - provide detailed nutritional info and alternative
+            response = generateProductResponse(product);
+            // Store the product for decision tracking (don't add savings yet)
+            setPendingProduct(product);
           } else {
-            // No specific product found - provide general support
-            response = getGeneralResponse(message);
-            // Make sure no pending product for general responses
-            setPendingProduct(null);
+            // Check if user mentioned an unknown food
+            const unknownFood = detectUnknownFood(message);
+            if (unknownFood) {
+              // User mentioned a food we don't recognize - ask for clarification
+              response = generateClarificationResponse(unknownFood);
+              setPendingProduct(null);
+            } else {
+              // No specific product found - provide general support
+              response = getGeneralResponse(message);
+              // Make sure no pending product for general responses
+              setPendingProduct(null);
+            }
           }
         }
         

@@ -3,7 +3,7 @@ import { AuthService } from "./authService";
 
 export function setupDemoUsers() {
   // Check if demo users already exist
-  const users = (AuthService as any).getUsers();
+  const users = (AuthService as { getUsers: () => Record<string, unknown> }).getUsers();
   
   if (Object.keys(users).length === 0) {
     // Create demo users
@@ -26,12 +26,12 @@ export function setupDemoUsers() {
       }
     ];
 
-    const userMap: Record<string, any> = {};
+    const userMap: Record<string, unknown> = {};
     demoUsers.forEach(user => {
       userMap[user.id] = user;
     });
 
-    (AuthService as any).saveUsers(userMap);
+    (AuthService as { saveUsers: (users: Record<string, unknown>) => void }).saveUsers(userMap);
 
     // Create demo profiles and savings data
     setupDemoProfile("demo1", "Demo User");

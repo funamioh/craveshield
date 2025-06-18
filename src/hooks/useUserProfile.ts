@@ -98,10 +98,6 @@ export function useUserProfile(userId?: string) {
 
   const getProgressTowardsGoals = (currentSavings: { totalMoneySaved: number; totalCaloriesSaved: number }) => {
     if (!profile) return null;
-
-    const now = new Date();
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
     // For demo purposes, we'll use current total savings
     // In a real app, you'd track daily/weekly/monthly separately

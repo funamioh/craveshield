@@ -56,7 +56,7 @@ export default function UserProfile({ profile, onSave, onClose }: UserProfilePro
     }
   }, [profile]);
 
-  const handleInputChange = (field: keyof UserProfile, value: any) => {
+  const handleInputChange = (field: keyof UserProfile, value: string | number | undefined) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -64,7 +64,7 @@ export default function UserProfile({ profile, onSave, onClose }: UserProfilePro
     }));
   };
 
-  const handleGoalChange = (field: keyof UserGoals, value: any) => {
+  const handleGoalChange = (field: keyof UserGoals, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       goals: {

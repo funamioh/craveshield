@@ -82,7 +82,7 @@ export default function GoalsDashboard({ profile, savings, onClose, onEditProfil
                   <p><strong>Activity Level:</strong> {profile.activityLevel.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
                   <p><strong>Primary Goal:</strong> {profile.primaryGoal.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
                   {profile.goals.personalMotivation && (
-                    <p><strong>Motivation:</strong> "{profile.goals.personalMotivation}"</p>
+                    <p><strong>Motivation:</strong> &quot;{profile.goals.personalMotivation}&quot;</p>
                   )}
                 </div>
               </div>
